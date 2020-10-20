@@ -105,12 +105,12 @@ const init = async () => {
   // console.log('Mongo connected!');
 };
 
+import RequestPromise from 'request-promise';
 import Request from 'request';
 import { Stream } from 'stream';
 import Fs from 'fs';
 
-const folder =
-  'https://drive.google.com/drive/u/2/mobile/folders/1ivE5BglKZ4XN81ydclY8PRu6WxJmspQE';
+const folder = '1G6kpL9T7o02iu1dIUubx-PpzZrK5zVmR';
 
 const getLinkDownload = (id: string) => {
   return `https://drive.google.com/uc?export=download&id=${id}`;
@@ -125,35 +125,42 @@ const hexToAscii = (str: string): string => {
     .replace(/\\n/g, '');
 };
 
+const getLinkFolder = (id: string) => {
+  const link = `https://www.googleapis.com/drive/v2/files?q=%27${id}%27+in+parents&key=AIzaSyDCoxr_vhugHhdij4E1Fewk7U-ySMEey8Y`;
+  return link;
+};
+
 const getAllFolder = async (link: string) => {
-  return new Promise((resolve, reject) => {
-    Request(link, (err, content) => {
-      if (err) {
-        reject(err);
-      }
+  let result: unknown[] = [];
+  try {
+    while (link) {
+      const data = JSON.parse(await RequestPromise(link));
+      const items = data.items;
+      const nextLink = data.nextLink;
 
-      const str = content.body
-        .split(`<script>window['_DRIVE_ivd'] = '`)[1]
-        .split(`';if`)[0];
-
-      Fs.writeFileSync(Path.join(__dirname, 'a.json'), hexToAscii(str));
-
-      const arr = JSON.parse(hexToAscii(str));
-      const files = arr[0].map((file: unknown[]) => {
-        const id = file[0];
-        const filename = file[2];
-        return { id, filename };
+      const arr = items.map((item: any) => {
+        const { originalFilename, id, downloadUrl } = item;
+        return {
+          id,
+          filename: originalFilename,
+          download: downloadUrl
+        };
       });
+      result = result.concat(arr);
+      link = nextLink + '&key=AIzaSyDCoxr_vhugHhdij4E1Fewk7U-ySMEey8Y';
+    }
+  } catch (e) {
+    console.log(e);
+  }
 
-      resolve(files);
-    });
-  });
+  return result;
 };
 
 const test = async (server: Hapi.Server) => {
-  const files = (await getAllFolder(folder)) as [];
+  const files = (await getAllFolder(getLinkFolder(folder))) as [];
+  console.log(files, files.length);
 
-  files.map((o: { id: string; filename: string }) => {
+  files.map((o: { id: string; filename: string, download: string }) => {
     server.route({
       method: 'GET',
       path: `/public/decode2/test/${o.filename}`,
@@ -162,13 +169,11 @@ const test = async (server: Hapi.Server) => {
       },
       handler: function (request, h) {
         const channel = new Stream.PassThrough();
-        Request(getLinkDownload(o.id)).pipe(channel);
+        Request(o.download).pipe(channel);
         return h.response(channel);
       }
     });
   });
-
-
 };
 
 process.on('unhandledRejection', (err) => {

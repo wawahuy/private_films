@@ -23,15 +23,6 @@ const configStrategy = async (server: Hapi.Server) => {
     tokenType: 'Bearer'
   });
 
-  server.auth.strategy('facebook', 'bell', {
-    provider: 'facebook',
-    password: 'cookie_encryption_password_secure',
-    clientId: process.env.FB_CLIENT_ID,
-    clientSecret: process.env.FB_CLIENT_SECRET,
-    isSecure: false,
-    location: process.env.FB_LOCATION
-  });
-
   server.auth.default('jwt');
 };
 

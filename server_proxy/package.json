@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run dev",
     "dev": "env-cmd -f .env.development nodemon",
     "lint": "eslint . --ext .ts",
     "format": "prettier --config .prettierrc \"src/**/*.ts\" --write",

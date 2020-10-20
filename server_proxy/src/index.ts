@@ -160,7 +160,7 @@ const test = async (server: Hapi.Server) => {
   const files = (await getAllFolder(getLinkFolder(folder))) as [];
   console.log(files, files.length);
 
-  files.map((o: { id: string; filename: string, download: string }) => {
+  files.map((o: { id: string; filename: string; download: string }) => {
     server.route({
       method: 'GET',
       path: `/public/decode2/test/${o.filename}`,
@@ -168,8 +168,14 @@ const test = async (server: Hapi.Server) => {
         auth: false
       },
       handler: function (request, h) {
+        console.log(o.filename);
         const channel = new Stream.PassThrough();
-        Request(o.download).pipe(channel);
+        Request(getLinkDownload(o.id))
+          .pipe(channel)
+          .on('end', () => {
+            channel.end();
+          })
+          .on('error', () => console.log('error'));
         return h.response(channel);
       }
     });

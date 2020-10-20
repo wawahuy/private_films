@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "npm run dev",
     "dev": "env-cmd -f .env.development nodemon",
     "lint": "eslint . --ext .ts",
     "format": "prettier --config .prettierrc \"src/**/*.ts\" --write",
@@ -71,6 +72,6 @@
     "moment": "^2.29.0",
     "mongoose": "^5.10.7",
     "s3-upload-stream": "^1.0.7",
-    "uuid": "^8.3.0",
+    "uuid": "^8.3.0"
   }
 }

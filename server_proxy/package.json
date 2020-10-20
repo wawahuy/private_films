@@ -10,7 +10,8 @@
     "test": "jest --detectOpenHandles",
     "build": "rimraf ./build && tsc",
     "staging": "env-cmd -f .env.staging node build/index.js",
-    "production": "env-cmd -f .env.production node build/index.js"
+    "production": "env-cmd -f .env.production node build/index.js",
+    "heroku": "env-cmd -f .env.heroku node build/index.js"
   },
   "repository": {
     "type": "git",

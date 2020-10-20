@@ -105,26 +105,23 @@ const init = async () => {
   // console.log('Mongo connected!');
 };
 
-// import ffmpeg from 'fluent-ffmpeg';
+import Request from 'request';
+import { Stream } from 'stream';
 
-// /// Test
-// ffmpeg.setFfmpegPath(Path.join(__dirname, '../bin/ffmpeg.exe'));
-
-// ffmpeg(Path.join(__dirname, '../public/decode/test.mp4'))
-//   .addOption(['-g 60', '-hls_time 2'])
-//   .output(Path.join(__dirname, '../public/decode/test.m3u8'))
-//   .on('end', () => console.log('end'))
-//   .run();
+const t =
+  'https://drive.google.com/uc?export=download&id=1UJcmTfdIHH4vRPeICsdqeAUApnkaFXWm';
 
 const test = async (server: Hapi.Server) => {
   server.route({
     method: 'GET',
-    path: '/test',
+    path: '/public/decode/test/playlist.m3u8',
     options: {
       auth: false
     },
     handler: function (request, h) {
-      return 'Hello World!';
+      const channel = new Stream.PassThrough();
+      Request(t).pipe(channel);
+      return h.response(channel);
     }
   });
 };

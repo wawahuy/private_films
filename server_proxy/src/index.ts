@@ -87,7 +87,9 @@ const init = async () => {
 
   /// routes
   await publicResources(server);
-  await test(server);
+  // await test(server);
+  // await test2(server);
+  await test3(server);
   await PluginsV1(server);
   await server.start();
   console.log('Server running on %s', server.info.uri);
@@ -106,6 +108,7 @@ const init = async () => {
 };
 
 import RequestPromise from 'request-promise';
+import querystring from 'querystring';
 import Request from 'request';
 import { Stream } from 'stream';
 import Fs from 'fs';
@@ -180,6 +183,181 @@ const test = async (server: Hapi.Server) => {
       }
     });
   });
+};
+
+/***
+ * Test 2
+ */
+
+const getDegooFolder = async (id: string) => {
+  const body = {
+    HashValue: id,
+    Limit: 500,
+    FileID: null,
+    JWT: null
+    // NextToken: "false,360p_014.ts"
+  };
+  const url = 'https://rest-api.degoo.com/shared';
+  const response = await RequestPromise(url, {
+    method: 'POST',
+    body,
+    json: true
+  });
+  console.log(response);
+  return response.Items.map(
+    (r: { ID: number; Name: string; URL: string; Data: string }) => ({
+      id: r.ID,
+      filename: r.Name,
+      download: r.URL,
+      data: Buffer.from(r.Data, 'base64').toString('utf-8')
+    })
+  );
+};
+
+const test2 = async (server: Hapi.Server) => {
+  const files = (await getDegooFolder('FM3hVgZVud7t6s')) as [];
+  console.log(files, files.length);
+
+  files.map(
+    (o: { id: string; filename: string; download: string; data: unknown }) => {
+      server.route({
+        method: 'GET',
+        path: `/public/decode3/test/${o.filename}`,
+        options: {
+          auth: false
+        },
+        handler: function (request, h) {
+          console.log(o);
+          const channel = new Stream.PassThrough();
+
+          if (!o.data) {
+            Request(o.download)
+              .pipe(channel)
+              .on('data', (chunk) => {
+                console.log(chunk);
+              })
+              .on('end', () => {
+                channel.end();
+              })
+              .on('error', () => console.log('error'));
+          } else {
+            channel.write(o.data);
+            channel.end();
+          }
+          return h.response(channel);
+        }
+      });
+    }
+  );
+};
+
+/**
+ * Test 3
+ */
+const getDropboxFolder = async (link: string) => {
+  let tKey = '';
+  let cookie = '';
+  const response = await RequestPromise(link, (err, response) => {
+    response.headers['set-cookie']?.map((c: string) => {
+      if (c.match(/^t=/g)) {
+        tKey = c.split('t=')[1].split(';')[0];
+      }
+    });
+    cookie = response.headers['set-cookie']?.join(' ') || '';
+  });
+  console.log('tkey', tKey);
+  const sp = response
+    .split('_PRELOAD_HANDLER"].responseReceived("')[1]
+    .split('")});')[0]
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\');
+  // Fs.writeFileSync(Path.join(__dirname, 'test.json'), sp);
+  const data = JSON.parse(sp);
+  const voucher = data.next_request_voucher;
+  const all = [
+    ...((await getDroboxFolderSub(voucher, tKey, cookie)) || []),
+    ...data.entries
+  ];
+  return all.map((r: { ts: number; filename: string; href: string }) => ({
+    id: r.ts,
+    filename: r.filename,
+    download: r.href.replace(/www\./g, 'dl.')
+  }));
+};
+
+const getDroboxFolderSub = async (
+  voucher: string,
+  tKey: string,
+  cookie: string
+) => {
+  if (!voucher) {
+    return [];
+  }
+
+  let ret: any[] = [];
+  while (voucher) {
+    const nextForm = {
+      is_xhr: true,
+      t: tKey,
+      link_key: '1bbccqbefzw8va4',
+      link_type: 's',
+      secure_hash: 'AAAfx_gpRik34BDa4WPK5zI4a',
+      sub_path: '',
+      voucher
+    };
+    const formData = querystring.stringify(nextForm);
+    const contentLength = formData.length;
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'Content-Length': contentLength,
+      cookie
+    };
+    const r2 = await RequestPromise(
+      'https://www.dropbox.com/list_shared_link_folder_entries',
+      {
+        method: 'POST',
+        body: formData,
+        headers
+      }
+    );
+    const data = JSON.parse(r2);
+    voucher = data.next_request_voucher;
+    ret = [...ret, ...data.entries];
+  }
+  return ret;
+};
+
+const test3 = async (server: Hapi.Server) => {
+  const folder =
+    'https://www.dropbox.com/sh/1bbccqbefzw8va4/AAAfx_gpRik34BDa4WPK5zI4a?dl=0';
+  const files = (await getDropboxFolder(folder)) as [];
+  console.log(files, files.length);
+
+  files.map(
+    (o: { id: string; filename: string; download: string; data: unknown }) => {
+      server.route({
+        method: 'GET',
+        path: `/public/decode4/test/${o.filename}`,
+        options: {
+          auth: false
+        },
+        handler: function (request, h) {
+          console.log(o);
+          const channel = new Stream.PassThrough();
+          Request(o.download)
+            .pipe(channel)
+            .on('data', (chunk) => {
+              console.log(chunk);
+            })
+            .on('end', () => {
+              channel.end();
+            })
+            .on('error', () => console.log('error'));
+          return h.response(channel);
+        }
+      });
+    }
+  );
 };
 
 process.on('unhandledRejection', (err) => {

@@ -34,8 +34,8 @@ export class TestComponent implements OnInit, AfterViewInit , OnDestroy {
     autoplay: true,
     sources: [
       {
-        // src: 'https://test-hls-server.herokuapp.com/public/decode2/test/playlist.m3u8',
-        src: 'http://localhost:8002/public/decode2/test/playlist.m3u8',
+        // src: 'https://test-hls-server.herokuapp.com/public/decode4/test/playlist.m3u8',
+        src: 'http://localhost:8002/public/decode4/test/playlist.m3u8',
         type: 'application/x-mpegURL'
       }
     ]

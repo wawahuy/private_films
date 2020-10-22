@@ -32,6 +32,7 @@ export class TestComponent implements OnInit, AfterViewInit , OnDestroy {
     fluid: false,
     aspectRatio: "16:9",
     autoplay: true,
+    muted: false,
     sources: [
       {
         // src: 'https://test-hls-server.herokuapp.com/public/decode4/test/playlist.m3u8',

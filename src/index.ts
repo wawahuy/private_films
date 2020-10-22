@@ -254,7 +254,16 @@ const test2 = async (server: Hapi.Server) => {
 /**
  * Test 3
  */
-const getDropboxFolder = async (link: string) => {
+interface DropboxOptions {
+  linkKey: string;
+  secureHash: string;
+}
+
+const getDropboxLink = (options: DropboxOptions) => {
+  return `https://www.dropbox.com/sh/${options.linkKey}/${options.secureHash}?dl=0`;
+};
+
+const getDropboxFolder = async (link: string, options: DropboxOptions) => {
   let tKey = '';
   let cookie = '';
   const response = await RequestPromise(link, (err, response) => {
@@ -275,7 +284,7 @@ const getDropboxFolder = async (link: string) => {
   const data = JSON.parse(sp);
   const voucher = data.next_request_voucher;
   const all = [
-    ...((await getDroboxFolderSub(voucher, tKey, cookie)) || []),
+    ...((await getDroboxFolderSub(voucher, tKey, cookie, options)) || []),
     ...data.entries
   ];
   return all.map((r: { ts: number; filename: string; href: string }) => ({
@@ -288,7 +297,8 @@ const getDropboxFolder = async (link: string) => {
 const getDroboxFolderSub = async (
   voucher: string,
   tKey: string,
-  cookie: string
+  cookie: string,
+  options: DropboxOptions
 ) => {
   if (!voucher) {
     return [];
@@ -299,9 +309,9 @@ const getDroboxFolderSub = async (
     const nextForm = {
       is_xhr: true,
       t: tKey,
-      link_key: '1bbccqbefzw8va4',
+      link_key: options.linkKey,
       link_type: 's',
-      secure_hash: 'AAAfx_gpRik34BDa4WPK5zI4a',
+      secure_hash: options.secureHash,
       sub_path: '',
       voucher
     };
@@ -328,9 +338,12 @@ const getDroboxFolderSub = async (
 };
 
 const test3 = async (server: Hapi.Server) => {
-  const folder =
-    'https://www.dropbox.com/sh/1bbccqbefzw8va4/AAAfx_gpRik34BDa4WPK5zI4a?dl=0';
-  const files = (await getDropboxFolder(folder)) as [];
+  const options: DropboxOptions = {
+    linkKey: 'kqlansowid2jxn7',
+    secureHash: 'AAAgJr7w5DQAlVxQz8jikQcaa'
+  };
+  const folder = getDropboxLink(options);
+  const files = (await getDropboxFolder(folder, options)) as [];
   console.log(files, files.length);
 
   files.map(

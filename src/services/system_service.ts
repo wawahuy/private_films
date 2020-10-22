@@ -1,5 +1,3 @@
-import { number } from 'joi';
-import { resolve } from 'path';
 import PidUsage from 'pidusage';
 
 export interface IPidInfo {

@@ -10,24 +10,25 @@ export interface IKeyPair {
   [key: string]: unknown;
 }
 
-class RequestService {
-  readonly MAX_REQUEST_SAVED = 200;
+class NetworkService {
+  readonly MAX_REQUEST_SAVED = 100 * 1024 * 1024;
   readonly HEADERS: Headers = {
     'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Mobile Safari/537.36`
   };
 
   private cached: ICached = {};
+  private sizeByte = 0;
 
-  private static _instance: RequestService;
+  private static _instance: NetworkService;
   static get instance() {
-    if (!RequestService._instance) {
-      RequestService._instance = new RequestService();
+    if (!NetworkService._instance) {
+      NetworkService._instance = new NetworkService();
     }
-    return RequestService._instance;
+    return NetworkService._instance;
   }
 
   get size() {
-    return this.ids.length;
+    return this.sizeByte;
   }
 
   get ids() {
@@ -44,12 +45,12 @@ class RequestService {
     if (!skipCached) {
       const r = this.cached[key];
       if (r) {
-        console.log('use old cached');
+        // console.log('use old cached');
         return r;
       }
     }
 
-    console.log('new cached');
+    // console.log('new cached');
     const preOptions: RequestPromise.Options = {
       method: 'GET',
       headers: this.HEADERS,
@@ -96,13 +97,22 @@ class RequestService {
     if (!skipCached) {
       this.popIfFull();
       this.cached[key] = requestCached;
+      requestCached.once('end', () => {
+        this.sizeByte += requestCached.getByteLength();
+      });
+      requestCached.once('abort', () => this.remove(key));
+      requestCached.once('error', () => this.remove(key));
     } else {
-      requestCached.on('end', () => requestCached.disponse());
-      requestCached.on('error', () => requestCached.disponse());
+      requestCached.once('end', () => requestCached.disponse());
+      requestCached.once('error', () => requestCached.disponse());
+      requestCached.once('abort', () => requestCached.disponse());
     }
   }
 
   remove(id: string) {
+    if (this.cached[id]) {
+      this.sizeByte -= this.cached[id].getByteLength();
+    }
     delete this.cached[id];
   }
 
@@ -114,7 +124,7 @@ class RequestService {
     const key = this.popIds();
     if (key) {
       const request = this.cached[key];
-      delete this.cached[key];
+      this.remove(key);
       return request;
     }
     return null;
@@ -132,4 +142,4 @@ class RequestService {
   }
 }
 
-export default RequestService;
+export default NetworkService;

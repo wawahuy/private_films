@@ -6,7 +6,7 @@ import Bell from '@hapi/bell';
 import Path from 'path';
 import PluginsV1 from './plugins';
 import corsHeaders from './cors';
-import RequestService from './services/request_service';
+import NetworkService from './services/network_service';
 import SystemService from './services/system_service';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
@@ -268,7 +268,7 @@ const getDropboxLink = (options: DropboxOptions) => {
 const getDropboxFolder = async (link: string, options: DropboxOptions) => {
   let tKey = '';
   let cookie = '';
-  const response = await RequestService.instance
+  const response = await NetworkService.instance
     .get(link, (err, response) => {
       response.headers['set-cookie']?.map((c: string) => {
         if (c.match(/^t=/g)) {
@@ -327,7 +327,7 @@ const getDroboxFolderSub = async (
       'Content-Length': contentLength,
       cookie
     };
-    const r2 = await RequestService.instance
+    const r2 = await NetworkService.instance
       .post(
         'https://www.dropbox.com/list_shared_link_folder_entries',
         undefined,
@@ -355,7 +355,7 @@ const test3 = async (server: Hapi.Server) => {
     handler: async function (request, h) {
       return {
         host: process.env.HEROKU_APP_NAME,
-        cached: RequestService.instance.size,
+        cached: NetworkService.instance.size / 1024 + 'KB',
         system: await SystemService.instance.info()
       };
     }
@@ -383,7 +383,13 @@ const test3 = async (server: Hapi.Server) => {
           // console.log(o);
           const id = iii++;
           const channel = new Stream.PassThrough();
-          RequestService.instance.get(o.download).createStream().pipe(channel);
+          const r = NetworkService.instance.get(o.download);
+          channel.on('close', () => {
+            if (!r.isDone()) {
+              r.abort();
+            }
+          });
+          r.createStream().pipe(channel);
           return h.response(channel);
         }
       });

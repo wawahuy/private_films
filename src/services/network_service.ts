@@ -11,7 +11,7 @@ export interface IKeyPair {
 }
 
 class NetworkService {
-  readonly MAX_REQUEST_SAVED = 100 * 1024 * 1024;
+  readonly MAX_REQUEST_SAVED = 200 * 1024 * 1024;
   readonly HEADERS: Headers = {
     'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Mobile Safari/537.36`
   };

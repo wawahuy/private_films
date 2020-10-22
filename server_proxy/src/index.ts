@@ -6,6 +6,8 @@ import Bell from '@hapi/bell';
 import Path from 'path';
 import PluginsV1 from './plugins';
 import corsHeaders from './cors';
+import RequestService from './services/request_service';
+import SystemService from './services/system_service';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
   return {
@@ -90,7 +92,7 @@ const init = async () => {
   // await test(server);
   // await test2(server);
   await test3(server);
-  await PluginsV1(server);
+  // await PluginsV1(server);
   await server.start();
   console.log('Server running on %s', server.info.uri);
 
@@ -266,16 +268,19 @@ const getDropboxLink = (options: DropboxOptions) => {
 const getDropboxFolder = async (link: string, options: DropboxOptions) => {
   let tKey = '';
   let cookie = '';
-  const response = await RequestPromise(link, (err, response) => {
-    response.headers['set-cookie']?.map((c: string) => {
-      if (c.match(/^t=/g)) {
-        tKey = c.split('t=')[1].split(';')[0];
-      }
-    });
-    cookie = response.headers['set-cookie']?.join(' ') || '';
-  });
+  const response = await RequestService.instance
+    .get(link, (err, response) => {
+      response.headers['set-cookie']?.map((c: string) => {
+        if (c.match(/^t=/g)) {
+          tKey = c.split('t=')[1].split(';')[0];
+        }
+      });
+      cookie = response.headers['set-cookie']?.join(' ') || '';
+    })
+    .createPromise();
   console.log('tkey', tKey);
   const sp = response
+    .toString('utf-8')
     .split('_PRELOAD_HANDLER"].responseReceived("')[1]
     .split('")});')[0]
     .replace(/\\"/g, '"')
@@ -322,15 +327,18 @@ const getDroboxFolderSub = async (
       'Content-Length': contentLength,
       cookie
     };
-    const r2 = await RequestPromise(
-      'https://www.dropbox.com/list_shared_link_folder_entries',
-      {
-        method: 'POST',
-        body: formData,
-        headers
-      }
-    );
-    const data = JSON.parse(r2);
+    const r2 = await RequestService.instance
+      .post(
+        'https://www.dropbox.com/list_shared_link_folder_entries',
+        undefined,
+        {
+          uri: 'https://www.dropbox.com/list_shared_link_folder_entries',
+          body: formData,
+          headers
+        }
+      )
+      .createPromise();
+    const data = JSON.parse(r2.toString('utf-8'));
     voucher = data.next_request_voucher;
     ret = [...ret, ...data.entries];
   }
@@ -338,6 +346,21 @@ const getDroboxFolderSub = async (
 };
 
 const test3 = async (server: Hapi.Server) => {
+  server.route({
+    method: 'GET',
+    path: `/info`,
+    options: {
+      auth: false
+    },
+    handler: async function (request, h) {
+      return {
+        host: process.env.HEROKU_APP_NAME,
+        cached: RequestService.instance.size,
+        system: await SystemService.instance.info()
+      };
+    }
+  });
+
   const options: DropboxOptions = {
     linkKey: 'kqlansowid2jxn7',
     secureHash: 'AAAgJr7w5DQAlVxQz8jikQcaa'
@@ -345,6 +368,8 @@ const test3 = async (server: Hapi.Server) => {
   const folder = getDropboxLink(options);
   const files = (await getDropboxFolder(folder, options)) as [];
   console.log(files, files.length);
+
+  let iii = 0;
 
   files.map(
     (o: { id: string; filename: string; download: string; data: unknown }) => {
@@ -355,17 +380,10 @@ const test3 = async (server: Hapi.Server) => {
           auth: false
         },
         handler: function (request, h) {
-          console.log(o);
+          // console.log(o);
+          const id = iii++;
           const channel = new Stream.PassThrough();
-          Request(o.download)
-            .pipe(channel)
-            .on('data', (chunk) => {
-              console.log(chunk);
-            })
-            .on('end', () => {
-              channel.end();
-            })
-            .on('error', () => console.log('error'));
+          RequestService.instance.get(o.download).createStream().pipe(channel);
           return h.response(channel);
         }
       });

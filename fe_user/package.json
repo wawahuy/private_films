@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 8100",
-    "build": "ng build",
+    "build": "npm run build:ssr",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
@@ -12,7 +12,7 @@
     "serve:ssr": "node dist/feuser/server/main.js --port 8100",
     "build:ssr": "ng build --prod && ng run feuser:server:production",
     "prerender": "ng run feuser:prerender",
-    "testheroku": "ng run serve"
+    "testheroku": "node dist/feuser/server"
   },
   "private": true,
   "dependencies": {

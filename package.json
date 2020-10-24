@@ -11,7 +11,8 @@
     "dev:ssr": "ng run feuser:serve-ssr --port 8100",
     "serve:ssr": "node dist/feuser/server/main.js --port 8100",
     "build:ssr": "ng build --prod && ng run feuser:server:production",
-    "prerender": "ng run feuser:prerender"
+    "prerender": "ng run feuser:prerender",
+    "testheroku": "ng run feuser:serve-ssr"
   },
   "private": true,
   "dependencies": {

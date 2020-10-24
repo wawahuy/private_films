@@ -1,4 +1,3 @@
-import { Request } from 'aws-sdk';
 import { EventEmitter } from 'events';
 import { boolean, extend } from 'joi';
 import LibRequest from 'request';
@@ -24,8 +23,14 @@ export class RequestTransform extends Transform {
   }
 }
 
+export declare interface RequestCached {
+  on(event: 'end', listener: () => void): this;
+  on(event: 'error', listener: () => void): this;
+  on(event: 'abort', listener: () => void): this;
+}
+
 export class RequestCached extends EventEmitter implements IRequest {
-  private request: LibRequest.Request | undefined;
+  protected request: LibRequest.Request | undefined;
   private data: Buffer[] = [];
   private _sizeByte = 0;
   private streams: RequestTransform[] = [];
@@ -110,5 +115,14 @@ export class RequestCached extends EventEmitter implements IRequest {
 
   public getByteLength() {
     return this._sizeByte;
+  }
+}
+
+export class Request extends RequestCached {
+  constructor(request: LibRequest.Request) {
+    super(request);
+    this.once('end', () => this.disponse());
+    this.once('error', () => this.disponse());
+    this.once('abort', () => this.disponse());
   }
 }

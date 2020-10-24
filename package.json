@@ -12,7 +12,6 @@
     "staging": "env-cmd -f .env.staging node build/index.js",
     "production": "env-cmd -f .env.production node build/index.js",
     "heroku": "env-cmd -f .env.heroku node build/index.js",
-
     "start": "npm run build && env-cmd -f .env.heroku node build/index.js"
   },
   "repository": {
@@ -62,7 +61,8 @@
     "@types/hapi__inert": "^5.2.1",
     "@types/hapi__joi": "^17.1.6",
     "@types/hapi__vision": "^5.5.2",
-    "aws-sdk": "^2.756.0",
+    "avl": "^1.4.4",
+    "aws-sdk": "^2.777.0",
     "body-parser": "^1.19.0",
     "boom": "^7.3.0",
     "env-cmd": "^10.1.0",

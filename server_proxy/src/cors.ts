@@ -1,6 +1,7 @@
 const corsHeaders = {
   origin: [
     'http://localhost:8100',
+    'https://test-hls-fe.herokuapp.com',
     'https://phim-api-staging.giayuh.com',
     'https://phim-staging.giayuh.com'
   ],

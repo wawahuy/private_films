@@ -32,8 +32,8 @@ pipeline {
     stage("deploy") {
         agent { node {label 'master'}}
         environment {
-          DOCKER_USER_ID = 1003
-          DOCKER_GROUP_ID = 983
+          DOCKER_USER_ID = 0
+          DOCKER_GROUP_ID = 0
           DOCKER_PORT = 8100
           CONTAINER_NAME = "private_film_fe"
         }

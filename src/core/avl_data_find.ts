@@ -14,10 +14,10 @@ export interface Data {
   [key: string]: unknown;
 }
 
-export class DataResult {
-  private _datas: Data[];
+export class DataResult<T extends Data> {
+  private _datas: T[];
 
-  constructor(datas: Data[]) {
+  constructor(datas: T[]) {
     this._datas = datas;
   }
 
@@ -26,7 +26,7 @@ export class DataResult {
   }
 
   get nextAvl() {
-    const avl = new AvlDataFind();
+    const avl = new AvlDataFind<T>();
     this._datas.map((data) => {
       avl.insert(data);
     });
@@ -34,16 +34,18 @@ export class DataResult {
   }
 }
 
-export class AvlDataFind {
-  private _datas: (Data | undefined)[];
+export class AvlDataFind<T extends Data> {
+  private _datas: (T | undefined)[];
   private _indexDataNull: number[];
   private _avls: IKeyPair<DupAVL<unknown, number>>;
   private _size: number;
+  private _exceptFields: string[];
 
   constructor() {
     this._datas = [];
     this._indexDataNull = [];
     this._avls = {};
+    this._exceptFields = [];
     this._size = 0;
   }
 
@@ -51,10 +53,17 @@ export class AvlDataFind {
     return this._size;
   }
 
-  insert(data: Data) {
+  get datas() {
+    return this._datas;
+  }
+
+  insert(data: T) {
     const fields = this.getFieldOfData(data);
     const index = this.insertData(data);
     fields.map((field) => {
+      if (this._exceptFields.indexOf(field) > -1) {
+        return;
+      }
       const avl = this.getAVL(field);
       const key = data[field];
       avl.insertDup(key, index);
@@ -62,7 +71,7 @@ export class AvlDataFind {
     this._size++;
   }
 
-  remove(data: Data) {
+  remove(data: T) {
     const index = this._datas.indexOf(data);
     if (index > -1) {
       const avlFields = this.getFieldOfData(this._avls);
@@ -76,7 +85,7 @@ export class AvlDataFind {
     }
   }
 
-  query(callback: (data: Data) => void) {
+  query(callback: (data: T) => void) {
     this._datas.map((data) => {
       if (data) {
         callback(data);
@@ -102,6 +111,10 @@ export class AvlDataFind {
 
   maxOfNumberValue(key: string) {
     return this.findNumberValueOnKey(key, (current, ret) => current > ret);
+  }
+
+  exceptFields(keys: string[]) {
+    this._exceptFields = keys;
   }
 
   private findNumberValueOnKey(
@@ -134,7 +147,7 @@ export class AvlDataFind {
   ) {
     const avl = this._avls[key];
     if (avl) {
-      let dataValues: Data[] = [];
+      let dataValues: T[] = [];
       const nodes = callback(avl);
       nodes.map((node) => {
         const dataIndex = node?.data;
@@ -160,7 +173,7 @@ export class AvlDataFind {
     return avl;
   }
 
-  private insertData(data: Data): number {
+  private insertData(data: T): number {
     let index = this._indexDataNull.shift();
     if (!index) {
       index = this._datas.length;
@@ -172,11 +185,11 @@ export class AvlDataFind {
   }
 
   private indexToValue(index: AVLTree<number, undefined>) {
-    const datas: Data[] = [];
+    const datas: T[] = [];
     index.forEach((node) => {
       const index = node?.key;
-      if (index) {
-        datas.push(this._datas[index] as Data);
+      if (index != undefined) {
+        datas.push(this._datas[index] as T);
       }
     });
     return datas;

@@ -116,6 +116,10 @@ export class RequestCached extends EventEmitter implements IRequest {
   public getByteLength() {
     return this._sizeByte;
   }
+
+  get requestNative() {
+    return this.request;
+  }
 }
 
 export class Request extends RequestCached {

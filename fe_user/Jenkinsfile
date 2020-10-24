@@ -8,18 +8,18 @@ pipeline {
 
   stages {
 
-    stage("Test") {
-      agent {
-          docker {
-            image 'node:12.18-alpine'
-            args '-u 0:0 -v /tmp:/root/.cache'
-          }
-      }
-      steps {
-        sh "npm install"
-        sh "npm run test"
-      }
-    }
+    // stage("Test") {
+    //   agent {
+    //       docker {
+    //         image 'node:12.18-alpine'
+    //         args '-u 0:0 -v /tmp:/root/.cache'
+    //       }
+    //   }
+    //   steps {
+    //     sh "npm install"
+    //     sh "npm run test"
+    //   }
+    // }
 
     stage("build") {
       agent { node {label 'master'}}

@@ -76,7 +76,7 @@ const init = async () => {
    * Config HAPI
    */
   const server = Hapi.server({
-    port: process.env.PORT,
+    port: process.argv[2] || process.env.PORT,
     routes: {
       cors: corsHeaders
     }
@@ -102,3 +102,6 @@ const init = async () => {
   // Mongoose.Promise = global.Promise;
   // console.log('Mongo connected!');
 };
+
+init();
+

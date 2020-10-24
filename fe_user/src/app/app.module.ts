@@ -8,10 +8,10 @@ import { TestComponent } from './pages/test/test.component';
 @NgModule({
   declarations: [
     AppComponent,
-    TestComponent,
+    TestComponent
   ],
   imports: [
-    BrowserModule.withServerTransition({ appId: 'serverApp' }),
+    BrowserModule,
     AppRoutingModule
   ],
   providers: [],

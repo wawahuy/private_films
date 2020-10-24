@@ -50,7 +50,7 @@ pipeline {
           //  -v \"`pwd`/data\":/var/ckcapi_home
 
           // run images latest
-          sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -p ${DOCKER_PORT}:${DOCKER_PORT} --user ${DOCKER_USER_ID}:${DOCKER_GROUP_ID} --name ${CONTAINER_NAME} -d ${DOCKER_IMAGE}:latest"
+          sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -p ${DOCKER_PORT}:80 --user ${DOCKER_USER_ID}:${DOCKER_GROUP_ID} --name ${CONTAINER_NAME} -d ${DOCKER_IMAGE}:latest"
         }
     }
   }

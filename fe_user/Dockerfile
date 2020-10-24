@@ -12,4 +12,4 @@ RUN npm run build
 
 FROM nginx:1.17.1-alpine
 COPY nginx-staging.conf /etc/nginx/nginx.conf
-COPY --from=build /usr/src/app/dist/feuser /usr/share/nginx/html
+COPY --from=build /src/private_films_fe_user/dist/feuser /usr/share/nginx/html

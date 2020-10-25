@@ -1,22 +1,20 @@
 FROM node:12.18-alpine
 
-ENV PORT=8001
+ENV PORT=8003
 
-# WORKDIR /src/private_films
+WORKDIR /src/private_films_server_manager
 
 # cache node_modules
-# RUN mkdir -p /tmp/private_films
-# ADD package.json /tmp/private_films/package.json
-# RUN cd /tmp/private_films && npm install
-# RUN mkdir -p /src/private_films && cp -a /tmp/private_films/node_modules /src/private_films/
-ADD package.json /src/private_films
-WORKDIR /src/private_films
-RUN npm install
+RUN mkdir -p /tmp/private_films_server_manager
+ADD package.json /tmp/private_films_server_manager/package.json
+RUN cd /tmp/private_films_server_manager && npm install
+RUN mkdir -p /src/private_films_server_manager && cp -a /tmp/private_films_server_manager/node_modules /src/private_films_server_manager/
+
 
 COPY . .
 
 RUN npm run build
 
-EXPOSE 8001
+EXPOSE 8003
 
 CMD "npm" "run" "staging"

@@ -5,4 +5,5 @@ git commit -m "%id%"
 git push origin main
 git subtree push --prefix server_proxy origin server_proxy
 git subtree push --prefix fe_user origin fe_user
+git subtree push --prefix server_manager origin server_manager
 set /p e="[enter] exit"

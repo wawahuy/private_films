@@ -80,6 +80,7 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "s3-upload-stream": "^1.0.7",
+    "sorted-btree": "^1.2.4",
     "uuid": "^8.3.0"
   }
 }

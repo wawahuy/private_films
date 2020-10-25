@@ -4,7 +4,7 @@ import Inert from '@hapi/inert';
 import Vision from '@hapi/vision';
 import Bell from '@hapi/bell';
 import Path from 'path';
-import PluginsV1 from './plugins';
+import pluginsV1 from './plugins';
 import corsHeaders from './cors';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
@@ -87,21 +87,21 @@ const init = async () => {
 
   /// routes
   await publicResources(server);
+  await pluginsV1(server);
   await server.start();
   console.log('Server running on %s', server.info.uri);
 
   /**
    * Config mongooes
    */
-  // await Mongoose.connect(process.env.MONGO_URI as string, {
-  //   useNewUrlParser: true,
-  //   useUnifiedTopology: true,
-  //   useFindAndModify: false,
-  //   useCreateIndex: true
-  // });
-  // Mongoose.Promise = global.Promise;
-  // console.log('Mongo connected!');
+  await Mongoose.connect(process.env.MONGO_URI as string, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true
+  });
+  Mongoose.Promise = global.Promise;
+  console.log('Mongo connected!');
 };
 
 init();
-

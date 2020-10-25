@@ -1,8 +1,8 @@
 import Hapi from '@hapi/hapi';
 import IPluginConfig from '../interface/IPluginConfig';
-// import AuthPlugins from './auth';
+import PluginUserFilms from './user_films';
 
-const plugins: IPluginConfig[] = [];
+const plugins: IPluginConfig[] = [PluginUserFilms];
 
 const PluginsV1 = async (server: Hapi.Server) => {
   await Promise.all(

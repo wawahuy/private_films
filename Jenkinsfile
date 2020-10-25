@@ -3,23 +3,23 @@ pipeline {
   agent none
 
   environment {
-    DOCKER_IMAGE = "ckcschool/ckcapi"
+    DOCKER_IMAGE = "private_films/server_manager"
   }
 
   stages {
 
-    stage("Test") {
-      agent {
-          docker {
-            image 'node:12.18-alpine'
-            args '-u 0:0 -v /tmp:/root/.cache'
-          }
-      }
-      steps {
-        sh "npm install"
-        sh "npm run test"
-      }
-    }
+    // stage("Test") {
+    //   agent {
+    //       docker {
+    //         image 'node:12.18-alpine'
+    //         args '-u 0:0 -v /tmp:/root/.cache'
+    //       }
+    //   }
+    //   steps {
+    //     sh "npm install"
+    //     sh "npm run test"
+    //   }
+    // }
 
     stage("build") {
       agent { node {label 'master'}}
@@ -32,10 +32,10 @@ pipeline {
     stage("deploy") {
         agent { node {label 'master'}}
         environment {
-          DOCKER_USER_ID = 1001
+          DOCKER_USER_ID = 1003
           DOCKER_GROUP_ID = 983
-          DOCKER_PORT = 5555
-          CONTAINER_NAME = "ckc-api"
+          DOCKER_PORT = 8003
+          CONTAINER_NAME = "private_films_server_manager"
         }
         steps {
           // kill container name by image

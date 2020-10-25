@@ -2,15 +2,8 @@ import Hapi from '@hapi/hapi';
 import Joi from 'joi';
 import Boom from 'boom';
 
-import UserModel from '../../models/user';
-
-interface PayloadLogin {
-  username: string;
-  password: string;
-}
-
-const PluginAuthLogin: Hapi.Plugin<Hapi.ServerRegisterOptions> = {
-  name: 'PluginAuthLogin',
+const PluginUserFilmsGet: Hapi.Plugin<Hapi.ServerRegisterOptions> = {
+  name: 'PluginUserFilmsGet',
   version: '1.0.0',
   register: async function (
     server: Hapi.Server,
@@ -19,7 +12,7 @@ const PluginAuthLogin: Hapi.Plugin<Hapi.ServerRegisterOptions> = {
     /// facebook auth
     server.route({
       method: 'post',
-      path: '/login',
+      path: '/{filmID}',
       options: {
         auth: false,
         tags: ['api'],
@@ -27,6 +20,9 @@ const PluginAuthLogin: Hapi.Plugin<Hapi.ServerRegisterOptions> = {
           payload: Joi.object({
             username: Joi.string().min(1).max(20),
             password: Joi.string().min(3).max(20)
+          }),
+          params: Joi.object({
+            filmID: Joi.string().min(1).max(100)
           })
         },
         response: {
@@ -48,15 +44,6 @@ const PluginAuthLogin: Hapi.Plugin<Hapi.ServerRegisterOptions> = {
           request: Hapi.Request,
           h: Hapi.ResponseToolkit
         ) {
-          const payload: PayloadLogin = request.payload as PayloadLogin;
-          const username: string = payload.username;
-          const password: string = payload.password;
-
-          let obj;
-          if ((obj = await UserModel.login(username, password))) {
-            return obj;
-          }
-
           throw Boom.unauthorized('Username or password failed!');
         }
       }
@@ -64,4 +51,4 @@ const PluginAuthLogin: Hapi.Plugin<Hapi.ServerRegisterOptions> = {
   }
 };
 
-export default PluginAuthLogin;
+export default PluginUserFilmsGet;

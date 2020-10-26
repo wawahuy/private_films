@@ -75,6 +75,7 @@
     "lodash": "^4.17.20",
     "md5": "^2.3.0",
     "moment": "^2.29.0",
+    "moment-timezone": "^0.5.31",
     "mongoose": "^5.10.7",
     "pidusage": "^2.0.21",
     "request": "^2.88.2",

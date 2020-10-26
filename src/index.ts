@@ -1,4 +1,4 @@
-import Mongoose from 'mongoose';
+import Mongoose, { Schema } from 'mongoose';
 import Hapi from '@hapi/hapi';
 import Inert from '@hapi/inert';
 import Vision from '@hapi/vision';
@@ -6,6 +6,8 @@ import Bell from '@hapi/bell';
 import Path from 'path';
 import pluginsV1 from './plugins';
 import corsHeaders from './cors';
+import ModelEpisodes, { EEpisodeStorage } from './models/episode';
+import { logTimer } from './core/log';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
   return {

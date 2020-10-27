@@ -28,7 +28,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: films
       MONGO_INITDB_ROOT_PASSWORD: cccvlvl
       MONGO_INITDB_ROOT_USERNAME: films
-    command: ["--bind_ip", "0.0.0.0"]
+    command: ["--bind_ip", "0.0.0.0", "--fork"]
     ports:
       - "10001:27017"
     volumes:

@@ -96,12 +96,18 @@ const init = async () => {
   /**
    * Config mongooes
    */
-  await Mongoose.connect(process.env.MONGO_URI as string, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true
-  });
+  await Mongoose.connect(
+    process.env.MONGO_URI as string,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
   Mongoose.Promise = global.Promise;
   console.log('Mongo connected!');
 };

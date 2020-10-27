@@ -1,0 +1,36 @@
+version: "3.7"
+services:
+  app:
+    image: private_films/server_manager:lasted
+    user: "1003:983"
+    ports:
+      - "8003:8003"
+    restart: always
+    build: .
+    links:
+      - redis
+      - mongodb
+
+  redis:
+    image: redis:5-alpine
+    user: "1003:983"
+    ports:
+      - "10002:6379"
+    volumes:
+      - /home/docker-save/data/redis:/data
+      - /home/docker-save/config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    restart: always
+
+  mongodb:
+    image: mongo:4.2
+    user: "1003:983"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: films
+      MONGO_INITDB_ROOT_PASSWORD: cccvlvl
+      MONGO_INITDB_ROOT_USERNAME: films
+    command: ["--bind_ip", "0.0.0.0"]
+    ports:
+      - "10001:27017"
+    volumes:
+      - /home/docker-save/data/mongodb:/data/db
+    restart: always

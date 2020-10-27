@@ -54,7 +54,7 @@ pipeline {
       }
       steps {
         sshagent(credentials : ['SSH_ALL_STAGING']) {
-          sh 'ssh allstaging@103.130.218.177 ls'
+          sh 'ssh -o StrictHostKeyChecking=no allstaging@103.130.218.177 uptime'
         }
       }
     }

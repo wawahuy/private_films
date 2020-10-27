@@ -53,12 +53,12 @@ pipeline {
         DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
         SSH_AUTH="allstaging@103.130.218.177"
         CONNECT="ssh -o StrictHostKeyChecking=no ${SSH_AUTH}"
-        DIR="sever_manager"
+        DIR="~./sever_manager"
       }
       steps {
         sshagent(credentials : ['SSH_ALL_STAGING']) {
-          sh "${CONNECT} 'mkdir -p \"./${DIR}\"'"
-          sh "scp -r \"${env.WORKSPACE}/docker-compose.yml\" ${SSH_AUTH}:\"/${DIR}\""
+          sh "${CONNECT} 'mkdir -p ${DIR}'"
+          sh "scp -r \"${env.WORKSPACE}/docker-compose.yml\" ${SSH_AUTH}:${DIR}"
           // sh "scp -r \"${env.WORKSPACE}/bash-deploy.sh\" ${SSH_AUTH}:${DIR}"
           // sh ""
         }

@@ -41,8 +41,8 @@ pipeline {
         // sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
         // sh "docker image rm ${DOCKER_IMAGE}:latest"
 
-        sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-        sh "docker build -t ${DOCKER_IMAGE}:latest ."
+        // sh "docker rmi ${DOCKER_IMAGE}:latest || true"
+        // sh "docker build -t ${DOCKER_IMAGE}:latest ."
       }
     }
 
@@ -58,10 +58,10 @@ pipeline {
       steps {
         sshagent(credentials : ['SSH_ALL_STAGING']) {
           sh "${CONNECT} 'mkdir -p \"${DIR}\"'"
-          sh "scp -r \"${env.WORKSPACE}/docker-compose.yml\" ${SSH_AUTH}:${DIR}"
+          sh "echo \"${env.WORKSPACE}/docker-compose.yml\""
+          // sh "scp -r \"${env.WORKSPACE}/docker-compose.yml\" ${SSH_AUTH}:${DIR}"
           // sh "scp -r \"${env.WORKSPACE}/bash-deploy.sh\" ${SSH_AUTH}:${DIR}"
           // sh ""
-          // sh "exit"
         }
       }
     }

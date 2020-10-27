@@ -3,7 +3,7 @@ set /p id="commit message: "
 git add *
 git commit -m "%id%"
 git push origin main
-@REM git subtree push --prefix server_proxy origin server_proxy
-@REM git subtree push --prefix fe_user origin fe_user
+git subtree push --prefix server_proxy origin server_proxy
+git subtree push --prefix fe_user origin fe_user
 git subtree push --prefix server_manager origin server_manager
 set /p e="[enter] exit"

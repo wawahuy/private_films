@@ -41,6 +41,9 @@ const FilmSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-const ModelEpisodes = Mongoose.model<IEpisodesDocument, IEpisodesModal>('episodes', FilmSchema);
+const ModelEpisodes = Mongoose.model<IEpisodesDocument, IEpisodesModal>(
+  'episodes',
+  FilmSchema
+);
 
 export default ModelEpisodes;

@@ -17,8 +17,8 @@ services:
     ports:
       - "10002:6379"
     volumes:
-      - /home/docker-save/data/redis:/data
-      - /home/docker-save/config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ~/docker-save/data/redis:/data
+      - ~/docker-save/config/redis/redis.conf:/usr/local/etc/redis/redis.conf
     restart: always
 
   mongodb:
@@ -32,5 +32,5 @@ services:
     ports:
       - "10001:27017"
     volumes:
-      - /home/docker-save/data/mongodb:/data/db
+      - ~/docker-save/data/mongodb:/data/db
     restart: always

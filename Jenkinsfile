@@ -41,8 +41,8 @@ pipeline {
         // sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
         // sh "docker image rm ${DOCKER_IMAGE}:latest"
 
-        sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-        sh "docker build -t ${DOCKER_IMAGE}:latest ."
+        sh "docker rmi ${DOCKER_IMAGE}:build || true"
+        sh "docker build -t ${DOCKER_IMAGE}:build ."
       }
     }
 

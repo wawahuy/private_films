@@ -4,6 +4,7 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "private_films/server_manager"
+    // 1003/983
   }
 
   stages {
@@ -23,41 +24,39 @@ pipeline {
 
     stage("build") {
       agent { node {label 'master'}}
+      environment {
+        DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+      }
       steps {
-        // sh "docker rmi ${DOCKER_IMAGE}:build || true"
-        // sh "docker build -t ${DOCKER_IMAGE}:build . "
-        sh "chmod +x -R \"${env.WORKSPACE}\""
-        sh "./bash-docker-down.sh"
-        sh "docker rmi ${DOCKER_IMAGE}:lasted || true"
-        sh "docker build -t ${DOCKER_IMAGE}:lasted . "
+        // sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} . "
+        // sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+        // sh "docker image ls | grep ${DOCKER_IMAGE}"
+        // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+        //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        //     sh "docker push ${DOCKER_IMAGE}:latest"
+        // }
+
+        // //clean to save disk
+        // sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        // sh "docker image rm ${DOCKER_IMAGE}:latest"
+
+        // sh "docker rmi ${DOCKER_IMAGE}:latest || true"
+        // sh "docker build -t ${DOCKER_IMAGE}:latest ."
       }
     }
 
+
     stage("deploy") {
-        agent { node {label 'master'}}
-        environment {
-          DOCKER_USER_ID = 1003
-          DOCKER_GROUP_ID = 983
-          DOCKER_PORT = 8003
-          CONTAINER_NAME = "private_films_server_manager"
+      agent { node {label 'master'}}
+      environment {
+        DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+      }
+      steps {
+        sshagent(credentials : ['SSH_ALL_STAGING']) {
+          sh 'ssh -v allstaging@103.130.218.177'
         }
-        steps {
-          // // kill container name by image
-          // sh "docker ps -a | awk '{ print \$1,\$2 }' | grep ${DOCKER_IMAGE} | awk '{print \$1 }' | xargs -I {} docker rm -f {}"
-
-          // // remove image lastest
-          // sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-
-          // // tag images version build -> latest
-          // sh "docker tag ${DOCKER_IMAGE}:build ${DOCKER_IMAGE}:latest"
-
-          // //  -v \"`pwd`/data\":/var/ckcapi_home
-
-          // // run images latest
-          // sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -p ${DOCKER_PORT}:${DOCKER_PORT} --user ${DOCKER_USER_ID}:${DOCKER_GROUP_ID} --name ${CONTAINER_NAME} -d ${DOCKER_IMAGE}:latest"
-          sh "chmod +x -R \"${env.WORKSPACE}\""
-          sh "./bash-docker-start.sh"
-        }
+      }
     }
   }
 

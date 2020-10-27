@@ -22,42 +22,49 @@ pipeline {
     //   }
     // }
 
-    // stage("build") {
-    //   agent { node {label 'master'}}
-    //   environment {
-    //     DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
-    //   }
-    //   steps {
-    //     // sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} . "
-    //     // sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
-    //     // sh "docker image ls | grep ${DOCKER_IMAGE}"
-    //     // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-    //     //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
-    //     //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-    //     //     sh "docker push ${DOCKER_IMAGE}:latest"
-    //     // }
+    stage("build") {
+      agent { node {label 'master'}}
+      environment {
+        DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+      }
+      steps {
+        // sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} . "
+        // sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+        // sh "docker image ls | grep ${DOCKER_IMAGE}"
+        // withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+        //     sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        //     sh "docker push ${DOCKER_IMAGE}:latest"
+        // }
 
-    //     // //clean to save disk
-    //     // sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
-    //     // sh "docker image rm ${DOCKER_IMAGE}:latest"
+        // //clean to save disk
+        // sh "docker image rm ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        // sh "docker image rm ${DOCKER_IMAGE}:latest"
 
-    //     // sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-    //     // sh "docker build -t ${DOCKER_IMAGE}:latest ."
-    //   }
-    // }
+        sh "docker rmi ${DOCKER_IMAGE}:latest || true"
+        sh "docker build -t ${DOCKER_IMAGE}:latest ."
+      }
+    }
 
 
     stage("deploy") {
       agent { node {label 'master'}}
       environment {
         DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
-        SSH="ssh -o StrictHostKeyChecking=no allstaging@103.130.218.177"
+        SSH_AUTH="allstaging@103.130.218.177"
+        DIR="~/sever_manager"
       }
       steps {
         sshagent(credentials : ['SSH_ALL_STAGING']) {
-          sh 'ssh -o StrictHostKeyChecking=no allstaging@103.130.218.177'
-          sh 'id'
-          sh 'exit'
+          sh "ssh -o StrictHostKeyChecking=no ${SSH_AUTH}"
+          sh "mkdir -p ${DIR}"
+          sh "cd ${DIR}"
+          sh "rm ./docker-compose.yml"
+          sh "rm ./bash-deploy.sh"
+          sh "scp -r ./docker-compose.yml ${SSH_AUTH}:${DIR}"
+          sh "scp -r ./bash-deploy.sh ${SSH_AUTH}:${DIR}"
+          sh "chmod u+x ./bash-deploy.sh && ./bash-deploy.sh"
+          sh "exit"
         }
       }
     }

@@ -24,8 +24,12 @@ pipeline {
     stage("build") {
       agent { node {label 'master'}}
       steps {
-        sh "docker rmi ${DOCKER_IMAGE}:build || true"
-        sh "docker build -t ${DOCKER_IMAGE}:build . "
+        // sh "docker rmi ${DOCKER_IMAGE}:build || true"
+        // sh "docker build -t ${DOCKER_IMAGE}:build . "
+        sh "docker-compose stop || true"
+        sh "docker-compose rm -f || true"
+        sh "docker rmi ${DOCKER_IMAGE}:lasted || true"
+        sh "docker build -t ${DOCKER_IMAGE}:lasted . "
       }
     }
 
@@ -38,19 +42,20 @@ pipeline {
           CONTAINER_NAME = "private_films_server_manager"
         }
         steps {
-          // kill container name by image
-          sh "docker ps -a | awk '{ print \$1,\$2 }' | grep ${DOCKER_IMAGE} | awk '{print \$1 }' | xargs -I {} docker rm -f {}"
+          // // kill container name by image
+          // sh "docker ps -a | awk '{ print \$1,\$2 }' | grep ${DOCKER_IMAGE} | awk '{print \$1 }' | xargs -I {} docker rm -f {}"
 
-          // remove image lastest
-          sh "docker rmi ${DOCKER_IMAGE}:latest || true"
+          // // remove image lastest
+          // sh "docker rmi ${DOCKER_IMAGE}:latest || true"
 
-          // tag images version build -> latest
-          sh "docker tag ${DOCKER_IMAGE}:build ${DOCKER_IMAGE}:latest"
+          // // tag images version build -> latest
+          // sh "docker tag ${DOCKER_IMAGE}:build ${DOCKER_IMAGE}:latest"
 
-          //  -v \"`pwd`/data\":/var/ckcapi_home
+          // //  -v \"`pwd`/data\":/var/ckcapi_home
 
-          // run images latest
-          sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -p ${DOCKER_PORT}:${DOCKER_PORT} --user ${DOCKER_USER_ID}:${DOCKER_GROUP_ID} --name ${CONTAINER_NAME} -d ${DOCKER_IMAGE}:latest"
+          // // run images latest
+          // sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -p ${DOCKER_PORT}:${DOCKER_PORT} --user ${DOCKER_USER_ID}:${DOCKER_GROUP_ID} --name ${CONTAINER_NAME} -d ${DOCKER_IMAGE}:latest"
+          sh "docker-compose up"
         }
     }
   }

@@ -53,7 +53,7 @@ pipeline {
         DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
         SSH_AUTH="allstaging@103.130.218.177"
         CONNECT="ssh -o StrictHostKeyChecking=no ${SSH_AUTH}"
-        DIR="~./sever_manager"
+        DIR="~/sever_manager"
       }
       steps {
         sshagent(credentials : ['SSH_ALL_STAGING']) {

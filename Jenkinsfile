@@ -26,8 +26,7 @@ pipeline {
       steps {
         // sh "docker rmi ${DOCKER_IMAGE}:build || true"
         // sh "docker build -t ${DOCKER_IMAGE}:build . "
-        sh "docker-compose stop || true"
-        sh "docker-compose rm -f || true"
+        sh "./bash-docker-down.sh"
         sh "docker rmi ${DOCKER_IMAGE}:lasted || true"
         sh "docker build -t ${DOCKER_IMAGE}:lasted . "
       }
@@ -55,7 +54,7 @@ pipeline {
 
           // // run images latest
           // sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -p ${DOCKER_PORT}:${DOCKER_PORT} --user ${DOCKER_USER_ID}:${DOCKER_GROUP_ID} --name ${CONTAINER_NAME} -d ${DOCKER_IMAGE}:latest"
-          sh "docker-compose up"
+          sh "./bash-docker-start.sh"
         }
     }
   }

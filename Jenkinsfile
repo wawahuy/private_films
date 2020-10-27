@@ -59,8 +59,10 @@ pipeline {
         sshagent(credentials : ['SSH_ALL_STAGING']) {
           sh "${CONNECT} 'mkdir -p ${DIR}' || true"
           sh "scp -r -o StrictHostKeyChecking=no \"${env.WORKSPACE}/docker-compose.yml\" ${SSH_AUTH}:${DIR}"
-          // sh "scp -r \"${env.WORKSPACE}/bash-deploy.sh\" ${SSH_AUTH}:${DIR}"
-          // sh ""
+          sh "scp -r -o StrictHostKeyChecking=no \"${env.WORKSPACE}/bash-deploy.sh\" ${SSH_AUTH}:${DIR}"
+
+          sh "${CONNECT} 'cd ${DIR} && chmod u+x ./bash-deploy.sh'"
+          sh "${CONNECT} 'cd ${DIR} && ./bash-deploy.sh'"
         }
       }
     }

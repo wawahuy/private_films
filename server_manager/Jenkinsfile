@@ -61,8 +61,8 @@ pipeline {
           sh "cd ${DIR}"
           sh "rm ./docker-compose.yml"
           sh "rm ./bash-deploy.sh"
-          sh "scp -r ./docker-compose.yml ${SSH_AUTH}:${DIR}"
-          sh "scp -r ./bash-deploy.sh ${SSH_AUTH}:${DIR}"
+          sh "scp -r ${env.WORKSPACE}/docker-compose.yml ${SSH_AUTH}:${DIR}"
+          sh "scp -r ${env.WORKSPACE}/bash-deploy.sh ${SSH_AUTH}:${DIR}"
           sh "chmod u+x ./bash-deploy.sh && ./bash-deploy.sh"
           sh "exit"
         }

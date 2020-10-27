@@ -51,10 +51,13 @@ pipeline {
       agent { node {label 'master'}}
       environment {
         DOCKER_TAG="${GIT_BRANCH.tokenize('/').pop()}-${GIT_COMMIT.substring(0,7)}"
+        SSH="ssh -o StrictHostKeyChecking=no allstaging@103.130.218.177"
       }
       steps {
         sshagent(credentials : ['SSH_ALL_STAGING']) {
-          sh 'ssh -o StrictHostKeyChecking=no allstaging@103.130.218.177 uptime'
+          sh 'ssh -o StrictHostKeyChecking=no allstaging@103.130.218.177'
+          sh 'id'
+          sh 'exit'
         }
       }
     }

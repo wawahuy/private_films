@@ -1,4 +1,3 @@
-import Mongoose, { Schema } from 'mongoose';
 import Hapi from '@hapi/hapi';
 import Inert from '@hapi/inert';
 import Vision from '@hapi/vision';
@@ -7,7 +6,8 @@ import Path from 'path';
 import pluginsV1 from './plugins';
 import corsHeaders from './cors';
 import ModelEpisodes, { EEpisodeStorage } from './models/episode';
-import { logTimer } from './core/log';
+import MongoService from './services/mongo_service';
+import RedisService from './services/redis_service';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
   return {
@@ -96,20 +96,12 @@ const init = async () => {
   /**
    * Config mongooes
    */
-  await Mongoose.connect(
-    process.env.MONGO_URI as string,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-      useCreateIndex: true
-    },
-    (err) => {
-      console.log(err);
-    }
-  );
-  Mongoose.Promise = global.Promise;
-  console.log('Mongo connected!');
+  await MongoService.instance.establish();
+
+  /**
+   * Config redis
+   */
+  await RedisService.instance.establish();
 };
 
 init();

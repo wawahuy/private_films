@@ -28,3 +28,6 @@ mkdir /home/$USR/.ssh
 touch /home/$USR/.ssh/authorized_keys
 cat "$HOME/.ssh/id_rsa_$USR.pub" > /home/$USR/.ssh/authorized_keys
 ssh -i $HOME/.ssh/id_rsa_$USR $USR@localhost "docker --version && echo '>>> DONE. New user added'"
+
+mkdir /home/$USR/data
+chown -R $USR:users /home/$USR/data

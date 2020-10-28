@@ -16,6 +16,13 @@ services:
     user: "1003:983"
     ports:
       - "10002:6379"
+    env:
+      - name: REDIS_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: redis-password
+            key: Duan2ti!
+    command: ["--requirepass", "$(REDIS_PASSWORD)"]
     volumes:
       - ".docker/data/redis:/data"
       - ".docker/config/redis/redis.conf:/usr/local/etc/redis/redis.conf"
@@ -26,7 +33,7 @@ services:
     user: "1003:983"
     environment:
       MONGO_INITDB_ROOT_USERNAME: films
-      MONGO_INITDB_ROOT_PASSWORD: cccvlvl
+      MONGO_INITDB_ROOT_PASSWORD: Duan2ti!
       MONGO_INITDB_ROOT_USERNAME: films
     command: ["--bind_ip", "0.0.0.0"]
     ports:

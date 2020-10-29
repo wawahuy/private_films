@@ -15,7 +15,7 @@ class MongoService {
 
   constructor() {}
 
-  private get clients() {
+  public get clients() {
     return this._clients;
   }
 

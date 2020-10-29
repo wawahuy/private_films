@@ -3,11 +3,13 @@ import Inert from '@hapi/inert';
 import Vision from '@hapi/vision';
 import Bell from '@hapi/bell';
 import Path from 'path';
-import pluginsV1 from './plugins';
+import pluginsV1 from './routes';
 import corsHeaders from './cors';
-import ModelEpisodes, { EEpisodeStorage } from './models/episode';
+import ModelEpisodes, { EEpisodeStorage } from './schemas/episode';
 import MongoService from './services/mongo_service';
 import RedisService from './services/redis_service';
+import JobService from './services/job_service';
+import SocketService from './services/socket_service';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
   return {
@@ -94,14 +96,12 @@ const init = async () => {
   console.log('Server running on %s', server.info.uri);
 
   /**
-   * Config mongooes
+   * Init instance services
    */
   await MongoService.instance.establish();
-
-  /**
-   * Config redis
-   */
   await RedisService.instance.establish();
+  await JobService.instance.establish();
+  await SocketService.instance.establish(server);
 };
 
 init();

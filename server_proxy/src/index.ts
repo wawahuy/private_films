@@ -108,6 +108,7 @@ import Request from 'request';
 import { Stream } from 'stream';
 import Fs from 'fs';
 import SocketService from './services/socket_service';
+import puppeteer from 'puppeteer';
 
 const folder = '1G6kpL9T7o02iu1dIUubx-PpzZrK5zVmR';
 
@@ -349,6 +350,26 @@ const test3 = async (server: Hapi.Server) => {
         cached: NetworkService.instance.size / 1024 + 'KB',
         system: await SystemService.instance.info()
       };
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: `/test2`,
+    options: {
+      auth: false
+    },
+    handler: async function (request, h) {
+      const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      const page = await browser.newPage();
+      await page.goto('https://google.com');
+      const b = await page.screenshot({
+        encoding: 'binary'
+      });
+      await browser.close();
+      return b;
     }
   });
 

@@ -7,6 +7,7 @@ import { EventEmitter } from 'events';
 import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { log } from '../core/log';
 import { IKeyPair } from '../interface/IKeyPair';
+import '../core/avl_find';
 
 export type SocketSendOptions = {
   mask?: boolean;

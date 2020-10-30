@@ -28,9 +28,6 @@ class SocketService {
     this.client.onclose = this.onClose.bind(this);
     this.client.onerror = this.onError.bind(this);
     this.client.onmessage = this.onMessage.bind(this);
-    this.test = setInterval(() => {
-      this.client.send(new Date().toISOString());
-    }, 2000);
   }
 
   onOpen() {
@@ -43,7 +40,6 @@ class SocketService {
       'closed. Reconnect will be attempted in 2 second.',
       e.reason
     );
-    clearInterval(this.test);
     setTimeout(() => this.connect(), 2000);
   }
 

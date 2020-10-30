@@ -3,6 +3,8 @@ import { IncomingMessage } from 'http';
 import { Socket } from 'net';
 import Ws from 'ws';
 import Url from 'url';
+import { EventEmitter } from 'events';
+import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { log } from '../core/log';
 import { IKeyPair } from '../interface/IKeyPair';
 
@@ -13,7 +15,11 @@ export type SocketSendOptions = {
   fin?: boolean;
 };
 
-class SocketService {
+export interface SockDetail {
+  host?: string;
+}
+
+class SocketService extends EventEmitter {
   private static _instance: SocketService;
   private wss!: Ws.Server;
   readonly path = '/ws/manager';
@@ -36,12 +42,28 @@ class SocketService {
     log('[Socket]', `Socket listening at ${this.path}`);
   }
 
-  private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer) {
+  private async onUpgrade(
+    request: IncomingMessage,
+    socket: Socket,
+    head: Buffer
+  ) {
     const pathname = Url.parse(request.url || '').pathname;
     if (pathname === this.path) {
+      // auth
+      const token = request.headers.sock_auth as string;
+      const data = (await this.auth(token)) as SockDetail;
+      if (!data || !data.host) {
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+
+      // upgrade socket
       this.wss.handleUpgrade(request, socket, head, (ws) => {
         this.wss.emit('connection', ws, request);
       });
+
+      log('[Socket]', 'Establish connect ', data);
     } else {
       socket.destroy();
     }
@@ -53,9 +75,7 @@ class SocketService {
     socket.on('error', this.onError.bind(this, socket));
   }
 
-  private onMessage(socket: Ws, data: Ws.Data) {
-    this.broadcast(data);
-  }
+  private onMessage(socket: Ws, data: Ws.Data) {}
 
   private onClose(socket: Ws, code: number, reason: string) {}
 
@@ -68,6 +88,21 @@ class SocketService {
   ) {
     this.wss.clients.forEach((socket: Ws) => {
       socket.send(data, options || {}, cb);
+    });
+  }
+
+  private async auth(token: string) {
+    return new Promise((resolve, reject) => {
+      jwt.verify(
+        token,
+        process.env.SOCKET_JWT_SECRET as string,
+        (err, decode) => {
+          if (err) {
+            resolve(false);
+          }
+          resolve(decode);
+        }
+      );
     });
   }
 }

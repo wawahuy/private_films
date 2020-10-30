@@ -24,16 +24,11 @@ class SocketService {
 
   connect() {
     const payload = {
-      host: 'test-hls-server.herokuapp.com'
+      host: process.env.SOCKET_CLIENT
     };
-    console.log(payload, process.env.SOCKET_JWT_SECRET);
     const token = jwt.sign(payload, process.env.SOCKET_JWT_SECRET as string);
-    const options: Ws.ClientOptions = {
-      headers: {
-        sock_auth: token
-      }
-    };
-    this.client = new Ws(process.env.SOCKET_MANAGER as string, options);
+    const uri = (process.env.SOCKET_MANAGER as string) + '?token=' + token;
+    this.client = new Ws(uri);
     this.client.onopen = this.onOpen.bind(this);
     this.client.onclose = this.onClose.bind(this);
     this.client.onerror = this.onError.bind(this);

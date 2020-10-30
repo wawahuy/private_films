@@ -47,10 +47,11 @@ class SocketService extends EventEmitter {
     socket: Socket,
     head: Buffer
   ) {
-    const pathname = Url.parse(request.url || '').pathname;
+    const url = Url.parse(request.url || '', true);
+    const pathname = url.pathname;
     if (pathname === this.path) {
       // auth
-      const token = request.headers.sock_auth as string;
+      const token = url.query['token'] as string;
       const data = (await this.auth(token)) as SockDetail;
       if (!data || !data.host) {
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');

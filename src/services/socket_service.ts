@@ -24,9 +24,9 @@ class SocketService {
 
   connect() {
     const payload = {
-      host: process.env.SOCKET_CLIENT
+      host: 'test-hls-server.herokuapp.com'
     };
-    console.log(payload);
+    console.log(payload, process.env.SOCKET_JWT_SECRET);
     const token = jwt.sign(payload, process.env.SOCKET_JWT_SECRET as string);
     const options: Ws.ClientOptions = {
       headers: {

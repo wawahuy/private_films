@@ -26,6 +26,7 @@ class SocketService {
     const payload = {
       host: process.env.SOCKET_CLIENT
     };
+    console.log(payload);
     const token = jwt.sign(payload, process.env.SOCKET_JWT_SECRET as string);
     const options: Ws.ClientOptions = {
       headers: {

@@ -99,17 +99,7 @@ const init = async () => {
   await server.start();
   console.log('Server running on %s', server.info.uri);
 
-  /**
-   * Config mongooes
-   */
-  // await Mongoose.connect(process.env.MONGO_URI as string, {
-  //   useNewUrlParser: true,
-  //   useUnifiedTopology: true,
-  //   useFindAndModify: false,
-  //   useCreateIndex: true
-  // });
-  // Mongoose.Promise = global.Promise;
-  // console.log('Mongo connected!');
+  await SocketService.instance.establish();
 };
 
 import RequestPromise from 'request-promise';
@@ -117,6 +107,7 @@ import querystring from 'querystring';
 import Request from 'request';
 import { Stream } from 'stream';
 import Fs from 'fs';
+import SocketService from './services/socket_service';
 
 const folder = '1G6kpL9T7o02iu1dIUubx-PpzZrK5zVmR';
 

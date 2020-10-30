@@ -38,6 +38,7 @@
     "@types/request-promise": "^4.1.46",
     "@types/s3-upload-stream": "^1.0.2",
     "@types/uuid": "^8.3.0",
+    "@types/ws": "^7.2.9",
     "@typescript-eslint/eslint-plugin": "^4.1.0",
     "@typescript-eslint/parser": "^4.1.0",
     "eslint": "^7.8.1",
@@ -80,6 +81,7 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "s3-upload-stream": "^1.0.7",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.0",
+    "ws": "^7.3.1"
   }
 }

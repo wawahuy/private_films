@@ -358,36 +358,23 @@ const test3 = async (server: Hapi.Server) => {
 
   server.route({
     method: 'GET',
-    path: `/test3/{size}`,
+    path: `/test2`,
     options: {
       auth: false,
       validate: {
-        params: Joi.object({
-          size: Joi.number().default(10).allow()
+        query: Joi.object({
+          url: Joi.string()
         })
       }
     },
     handler: async function (request, h) {
-      return {
-        down: await getNetworkDownloadSpeed(request.params.size * 1024 * 1024),
-        up: await getNetworkUploadSpeed(request.params.size * 1024 * 1024)
-      };
-    }
-  });
-
-  server.route({
-    method: 'GET',
-    path: `/test2`,
-    options: {
-      auth: false
-    },
-    handler: async function (request, h) {
       try {
         const browser = await puppeteer.launch({
-          args: ['--no-sandbox', '--disable-setuid-sandbox']
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          timeout: 3000 * 1000
         });
         const page = await browser.newPage();
-        await page.goto('https://google.com');
+        await page.goto(request.query.url);
         const b = await page.screenshot({
           encoding: 'binary'
         });
@@ -487,44 +474,4 @@ class ReadStreamUpTest extends ReadStreamDownTest {
     }
     this.testLength = t;
   }
-}
-
-async function getNetworkDownloadSpeed(size: number) {
-  const uri = 'http://eu.httpbin.org/stream-bytes/' + Math.round(size);
-  const time = new Date().getTime();
-  requestPromise(uri).pipe(new ReadStreamDownTest());
-  const t = new Date().getTime() - time;
-  return {
-    tms: t,
-    'mb/s': size / 1024 / 1024 / (t / 1000)
-  };
-}
-async function getNetworkUploadSpeed(size: number) {
-  return new Promise((resolve, reject) => {
-    // const time = new Date().getTime();
-    // const stream = new ReadStreamUpTest(size);
-    // const options = {
-    //   hostname: 'www.google.com',
-    //   port: 80,
-    //   path: '/catchers/544b09b4599c1d0200000289',
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Content-Length': size,
-    //   },
-    //   body: stream
-    // };
-    // request(options);
-    // stream.on('end', () => {
-    //   const t = new Date().getTime() - time;
-    //   resolve({
-    //     tms: t,
-    //     'mb/s': size / 1024 / 1024 / (t / 1000)
-    //   });
-    // });
-    // stream.on('error', () => {
-    //   reject(false);
-    // });
-    resolve(0);
-  });
 }

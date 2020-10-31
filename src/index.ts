@@ -110,6 +110,10 @@ import Fs from 'fs';
 import SocketService from './services/socket_service';
 import puppeteer from 'puppeteer';
 
+interface Element { }
+interface Node { }
+interface NodeListOf<TNode = Node> { }
+
 const folder = '1G6kpL9T7o02iu1dIUubx-PpzZrK5zVmR';
 
 const getLinkDownload = (id: string) => {

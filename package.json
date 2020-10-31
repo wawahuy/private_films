@@ -78,6 +78,7 @@
     "md5": "^2.3.0",
     "moment": "^2.29.0",
     "mongoose": "^5.10.7",
+    "network-speed": "^2.0.7",
     "pidusage": "^2.0.21",
     "puppeteer": "^5.4.1",
     "request": "^2.88.2",

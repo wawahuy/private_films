@@ -99,16 +99,19 @@ const init = async () => {
   await server.start();
   console.log('Server running on %s', server.info.uri);
 
-  await SocketService.instance.establish();
+  // await SocketService.instance.establish();
 };
 
 import RequestPromise from 'request-promise';
 import querystring from 'querystring';
 import Request from 'request';
-import { Stream } from 'stream';
+import { Stream, Transform, Writable } from 'stream';
 import Fs from 'fs';
 import SocketService from './services/socket_service';
 import puppeteer from 'puppeteer';
+import Joi, { number } from 'joi';
+import requestPromise from 'request-promise';
+import { request } from 'http';
 
 const folder = '1G6kpL9T7o02iu1dIUubx-PpzZrK5zVmR';
 
@@ -355,14 +358,19 @@ const test3 = async (server: Hapi.Server) => {
 
   server.route({
     method: 'GET',
-    path: `/test3`,
+    path: `/test3/{size}`,
     options: {
-      auth: false
+      auth: false,
+      validate: {
+        params: Joi.object({
+          size: Joi.number().default(10).allow()
+        })
+      }
     },
     handler: async function (request, h) {
       return {
-        down: await getNetworkDownloadSpeed(),
-        up: await getNetworkUploadSpeed()
+        down: await getNetworkDownloadSpeed(request.params.size * 1024 * 1024),
+        up: await getNetworkUploadSpeed(request.params.size * 1024 * 1024)
       };
     }
   });
@@ -374,20 +382,24 @@ const test3 = async (server: Hapi.Server) => {
       auth: false
     },
     handler: async function (request, h) {
-      const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-      const page = await browser.newPage();
-      await page.goto('https://google.com');
-      const b = await page.screenshot({
-        encoding: 'binary'
-      });
-      await browser.close();
+      try {
+        const browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        await page.goto('https://google.com');
+        const b = await page.screenshot({
+          encoding: 'binary'
+        });
+        await browser.close();
 
-      const a = new Stream.PassThrough();
-      a.write(b);
-      a.end();
-      return a;
+        const a = new Stream.PassThrough();
+        a.write(b);
+        a.end();
+        return a;
+      } catch (e) {
+        console.log(e);
+      }
     }
   });
 
@@ -452,31 +464,67 @@ process.on('unhandledRejection', (err) => {
 
 init();
 
-import NetworkSpeed = require('network-speed'); // ES6
-const testNetworkSpeed = new NetworkSpeed();
-async function getNetworkDownloadSpeed() {
-  const fileSizeInBytes = 50000000;
-  const baseUrl = 'http://eu.httpbin.org/stream-bytes/' + fileSizeInBytes;
-  const speed = await testNetworkSpeed.checkDownloadSpeed(
-    baseUrl,
-    fileSizeInBytes
-  );
-  return speed;
+class ReadStreamDownTest extends Transform {
+  _transform(chunk: unknown, enc: unknown, done: () => unknown) {
+    done();
+  }
 }
-async function getNetworkUploadSpeed() {
-  const options = {
-    hostname: 'www.google.com',
-    port: 80,
-    path: '/catchers/544b09b4599c1d0200000289',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
+
+class ReadStreamUpTest extends ReadStreamDownTest {
+  constructor(private testLength: number) {
+    super();
+  }
+
+  _read(size: number) {
+    const t = this.testLength - size;
+    console.log(size);
+    if (t <= 0) {
+      console.log('end');
+      this.push(Buffer.alloc(size));
+      this.end();
+    } else {
+      this.push(Buffer.alloc(size));
     }
+    this.testLength = t;
+  }
+}
+
+async function getNetworkDownloadSpeed(size: number) {
+  const uri = 'http://eu.httpbin.org/stream-bytes/' + Math.round(size);
+  const time = new Date().getTime();
+  requestPromise(uri).pipe(new ReadStreamDownTest());
+  const t = new Date().getTime() - time;
+  return {
+    tms: t,
+    'mb/s': size / 1024 / 1024 / (t / 1000)
   };
-  const fileSizeInBytes = 2000000;
-  const speed = await testNetworkSpeed.checkUploadSpeed(
-    options,
-    fileSizeInBytes
-  );
-  return speed;
+}
+async function getNetworkUploadSpeed(size: number) {
+  return new Promise((resolve, reject) => {
+    // const time = new Date().getTime();
+    // const stream = new ReadStreamUpTest(size);
+    // const options = {
+    //   hostname: 'www.google.com',
+    //   port: 80,
+    //   path: '/catchers/544b09b4599c1d0200000289',
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Content-Length': size,
+    //   },
+    //   body: stream
+    // };
+    // request(options);
+    // stream.on('end', () => {
+    //   const t = new Date().getTime() - time;
+    //   resolve({
+    //     tms: t,
+    //     'mb/s': size / 1024 / 1024 / (t / 1000)
+    //   });
+    // });
+    // stream.on('error', () => {
+    //   reject(false);
+    // });
+    resolve(0);
+  });
 }

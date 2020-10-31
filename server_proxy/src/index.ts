@@ -355,6 +355,20 @@ const test3 = async (server: Hapi.Server) => {
 
   server.route({
     method: 'GET',
+    path: `/test3`,
+    options: {
+      auth: false
+    },
+    handler: async function (request, h) {
+      return {
+        down: await getNetworkDownloadSpeed(),
+        up: await getNetworkUploadSpeed()
+      };
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: `/test2`,
     options: {
       auth: false
@@ -369,7 +383,11 @@ const test3 = async (server: Hapi.Server) => {
         encoding: 'binary'
       });
       await browser.close();
-      return b;
+
+      const a = new Stream.PassThrough();
+      a.write(b);
+      a.end();
+      return a;
     }
   });
 
@@ -433,3 +451,32 @@ process.on('unhandledRejection', (err) => {
 });
 
 init();
+
+import NetworkSpeed = require('network-speed'); // ES6
+const testNetworkSpeed = new NetworkSpeed();
+async function getNetworkDownloadSpeed() {
+  const fileSizeInBytes = 50000000;
+  const baseUrl = 'http://eu.httpbin.org/stream-bytes/' + fileSizeInBytes;
+  const speed = await testNetworkSpeed.checkDownloadSpeed(
+    baseUrl,
+    fileSizeInBytes
+  );
+  return speed;
+}
+async function getNetworkUploadSpeed() {
+  const options = {
+    hostname: 'www.google.com',
+    port: 80,
+    path: '/catchers/544b09b4599c1d0200000289',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  const fileSizeInBytes = 2000000;
+  const speed = await testNetworkSpeed.checkUploadSpeed(
+    options,
+    fileSizeInBytes
+  );
+  return speed;
+}

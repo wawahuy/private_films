@@ -376,7 +376,8 @@ const test3 = async (server: Hapi.Server) => {
         const page = await browser.newPage();
         await page.goto(request.query.url);
         const b = await page.screenshot({
-          encoding: 'binary'
+          encoding: 'binary',
+          fullPage: true
         });
         await browser.close();
 

@@ -10,6 +10,7 @@ import MongoService from './services/mongo_service';
 import RedisService from './services/redis_service';
 import JobService from './services/job_service';
 import SocketService from './services/socket_service';
+import RealtimeDBService from './services/realtimedb_service';
 
 const validateJwt = async function (decoded?: unknown, request?: unknown) {
   return {
@@ -99,9 +100,9 @@ const init = async () => {
    * Init instance services
    */
   await MongoService.instance.establish();
-  await RedisService.instance.establish();
   await JobService.instance.establish();
   await SocketService.instance.establish(server);
+  await RealtimeDBService.instance.establish();
 };
 
 init();

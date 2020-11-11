@@ -30,11 +30,31 @@ class RealtimeDBService {
 
   public async establish() {
     const options: Options = {
-      logging: false
+      logging: log.bind(null, '[DBRT]')
     };
-    this._db = new Sequelize('sqlite:inmemory', options);
+    this._db = new Sequelize('sqlite::memory:', options);
     Model.RTServer = await RTServerFactory(this._db);
     Model.RTSegment = await RTSegmentFactory(this._db);
+
+    Model.RTSegment.belongsTo(Model.RTServer, {
+      foreignKey: 'server_id'
+    });
+
+    await Model.RTServer.create({
+      server_id: 1,
+      server_name: '123'
+    });
+
+    await Model.RTServer.create({
+      server_id: 2,
+      server_name: '123'
+    });
+
+    await Model.RTSegment.create({
+      server_id: 1,
+      film_id: 111,
+      segment_id: 0
+    });
   }
 }
 

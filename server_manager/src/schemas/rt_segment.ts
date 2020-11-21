@@ -1,3 +1,4 @@
+import { timeStamp } from 'console';
 import { BuildOptions, DataTypes, Model, Sequelize } from 'sequelize';
 import { RTServerStatic } from './rt_server';
 
@@ -36,6 +37,7 @@ export default async function RTSegmentFactory(
       }
     },
     {
+      timestamps: false,
       indexes: [
         {
           fields: ['server_id'],

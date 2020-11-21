@@ -1,8 +1,18 @@
-import { Options, Sequelize } from 'sequelize';
+import { Options, QueryTypes, Sequelize } from 'sequelize';
 import { log } from '../core/log';
 import RTServerFactory, { RTServerStatic } from '../schemas/rt_server';
 import RTSegmentFactory, { RTSegmentStatic } from '../schemas/rt_segment';
 
+/**
+ * ******************** NOTE *************************
+ * - Giải pháp realtime cached được đề xuất:
+ *  + Redis: không chấp nhận, rất khó trong việc nâng cấp và thiết kế
+ *  + SqlLite (:memory:): chấp nhận, kiểm tra cho thấy nó sử dụng không qua nhiều chi phí
+ *
+ * - Các kiểm tra cho thấy sequelize gây tốn chi phí Create gắp 3 lần so với query nguyên thủy của nó
+ *    + Hướng giải quyết thay thế Create trở về nguyên thủy
+ *    + Tình trạng: (chưa giải quyết)
+ */
 export interface RTSchema {
   RTServer?: RTServerStatic;
   RTSegment?: RTSegmentStatic;
@@ -30,31 +40,12 @@ class RealtimeDBService {
 
   public async establish() {
     const options: Options = {
-      logging: log.bind(null, '[DBRT]')
+      // logging: (l) => log('[DBRT]', l),
+      logging: false
     };
     this._db = new Sequelize('sqlite::memory:', options);
     Model.RTServer = await RTServerFactory(this._db);
     Model.RTSegment = await RTSegmentFactory(this._db);
-
-    Model.RTSegment.belongsTo(Model.RTServer, {
-      foreignKey: 'server_id'
-    });
-
-    await Model.RTServer.create({
-      server_id: 1,
-      server_name: '123'
-    });
-
-    await Model.RTServer.create({
-      server_id: 2,
-      server_name: '123'
-    });
-
-    await Model.RTSegment.create({
-      server_id: 1,
-      film_id: 111,
-      segment_id: 0
-    });
   }
 }
 
